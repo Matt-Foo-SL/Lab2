@@ -1,0 +1,55 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout the code
+       uses: actions/checkout@v4
+     - name: Build the application
+       run: echo 'Building the application'
+     - name: Run unit tests
+       run: echo 'Running unit tests'
+     - name: Run integration tests
+       run: echo 'Running integration tests'
+     - name: Build docker image
+       run: echo 'Building the docker image'
+     - name: Push docker image
+       run: echo 'Pushing the docker image to the registry'
+     - name: Deploy the application
+run: echo 'Deploying the application to the kubernetes cluster'
+
+test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+      - run: npm ci
+      - run: npm test
+
+deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+      - run: npm ci
+      - name: Deploy
+        run: |
+          # Add your deployment commands here
+          echo "Deploying application"
