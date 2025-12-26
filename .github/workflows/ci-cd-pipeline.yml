@@ -10,22 +10,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-     - name: Checkout the code
-       uses: actions/checkout@v4
-     - name: Build the application
-       run: echo 'Building the application'
-     - name: Run unit tests
-       run: echo 'Running unit tests'
-     - name: Run integration tests
-       run: echo 'Running integration tests'
-     - name: Build docker image
-       run: echo 'Building the docker image'
-     - name: Push docker image
-       run: echo 'Pushing the docker image to the registry'
-     - name: Deploy the application
-run: echo 'Deploying the application to the kubernetes cluster'
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Cache Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Tests
+        run: npm test
 
-test:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,19 +39,9 @@ test:
       - run: npm ci
       - run: npm test
 
-deploy:
-    needs: test
+  deploy:
+    needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "npm"
-      - run: npm ci
-      - name: Deploy
-        run: |
-          # Add your deployment commands here
-          echo "Deploying application"
+      - name: Deploy Application
+        run: echo "Deploying application..."
